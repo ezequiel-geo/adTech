@@ -6,3 +6,4 @@ Solucion al ejercicio final de la materia *PROGRAMACIÓN AVANZADA PARA GRANDES V
 - Pablo Diaz
 - Martin Groppo
 - Ezequiel Martinez
+- Valentin Dualde
