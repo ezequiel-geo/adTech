@@ -19,7 +19,7 @@ cd adTech
 ### Para levantar airflow local:
 
 ```
-./airflow/start_airflow.sh
+./airflow/start_airflow.sh local
 ```
 
 y para frenarlo:
