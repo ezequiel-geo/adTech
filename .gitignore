@@ -11,6 +11,7 @@ build/
 venv/
 .venv/
 env/
+airflow_adtech_env/
 
 # Environment variables
 .env
@@ -23,12 +24,16 @@ env/
 # Comment these lines out if you want to track sample data
 # data/*.csv
 
-# Airflow
+# Airflow runtime files
+airflow/*.pid
 airflow/logs/
 airflow/airflow.db
+airflow/airflow.db-shm
+airflow/airflow.db-wal
 airflow/airflow.cfg
 airflow/webserver_config.py
 airflow/standalone_admin_password.txt
+airflow/simple_auth_manager_passwords.json.generated
 
 # IDE
 .vscode/
