@@ -1,6 +1,7 @@
 import pandas as pd
 from sqlalchemy import create_engine
 from airflow.models import Variable
+from sqlalchemy import text
 
 BUCKET_NAME = "storage_bucket_groppo"
 PROCESSED_DIR = f"gs://{BUCKET_NAME}/data/processed"
@@ -33,8 +34,9 @@ def run():
 
     print("Escribiendo en Cloud SQL (modo append para historial)...")
     engine = create_engine(f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}")
-    
-    
+    fecha_ejecucion = final_df['run_date'].iloc[0]
+    with engine.begin() as conn:
+       conn.execute(text(f"DELETE FROM recommendations WHERE run_date = '{fecha_ejecucion}'"))
     final_df.to_sql("recommendations", engine, if_exists="append", index=False)
 
     print("DBWriting terminado")
