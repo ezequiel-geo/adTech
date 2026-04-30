@@ -1,6 +1,20 @@
+import os
+import sys
 from datetime import datetime, timedelta
 from airflow import DAG
-from airflow.providers.standard.operators.bash import BashOperator
+from airflow.operators.python import PythonOperator
+
+
+ruta_real = os.path.realpath(__file__)
+directorio_dags = os.path.dirname(ruta_real)
+directorio_base = os.path.dirname(directorio_dags)
+directorio_tasks = os.path.join(directorio_base, "tasks")
+sys.path.append(directorio_tasks)
+
+import filter_data
+import top_ctr
+import top_product
+import db_writing
 
 default_args = {
     "owner": "valen",
@@ -19,25 +33,28 @@ with DAG(
     tags=["tp", "final"],
 ) as dag:
 
-    filter_data = BashOperator(
+    filter_data_task = PythonOperator(
         task_id="filter_data",
-        bash_command="python3 $AIRFLOW_HOME/tasks/filter_data.py",
+        python_callable=filter_data.run,
+        op_kwargs={'ds': '{{ ds }}'}
     )
 
-    top_ctr = BashOperator(
+    top_ctr_task = PythonOperator(
         task_id="top_ctr",
-        bash_command="python3 $AIRFLOW_HOME/tasks/top_ctr.py",
+        python_callable=top_ctr.run,
+        op_kwargs={'ds': '{{ ds }}'}
     )
 
-    top_product = BashOperator(
+    top_product_task = PythonOperator(
         task_id="top_product",
-        bash_command="python3 $AIRFLOW_HOME/tasks/top_product.py",
+        python_callable=top_product.run,
+        op_kwargs={'ds': '{{ ds }}'}
     )
 
-    db_writing = BashOperator(
+    db_writing_task = PythonOperator(
         task_id="db_writing",
-        bash_command="python3 $AIRFLOW_HOME/tasks/db_writing.py",
+        python_callable=db_writing.run,
     )
 
-    filter_data >> [top_ctr, top_product]
-    [top_ctr, top_product] >> db_writing
+    filter_data_task >> [top_ctr_task, top_product_task]
+    [top_ctr_task, top_product_task] >> db_writing_task
