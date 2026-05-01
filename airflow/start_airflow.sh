@@ -36,13 +36,16 @@ else
 fi
 
 if [ "$ENV" = "cloud" ]; then
+  if [ -z "$AIRFLOW__DATABASE__SQL_ALCHEMY_CONN" ]; then
+    echo "ERROR: cloud mode requires AIRFLOW__DATABASE__SQL_ALCHEMY_CONN in .env"
+    exit 1
+  fi
   if [ -z "$AIRFLOW_VAR_DB_USER" ] || [ -z "$AIRFLOW_VAR_DB_PASS" ] || [ -z "$AIRFLOW_VAR_DB_HOST" ] || [ -z "$AIRFLOW_VAR_DB_NAME" ]; then
     echo "ERROR: cloud mode requires AIRFLOW_VAR_DB_USER, AIRFLOW_VAR_DB_PASS, AIRFLOW_VAR_DB_HOST, AIRFLOW_VAR_DB_NAME in .env"
     exit 1
   fi
   export AIRFLOW__CORE__PARALLELISM=2
-  export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://${AIRFLOW_VAR_DB_USER}:${AIRFLOW_VAR_DB_PASS}@${AIRFLOW_VAR_DB_HOST}/${AIRFLOW_VAR_DB_NAME}"
-  echo "Modo cloud (DB: ${AIRFLOW_VAR_DB_HOST}/${AIRFLOW_VAR_DB_NAME})"
+  echo "Modo cloud (metadata DB: $AIRFLOW__DATABASE__SQL_ALCHEMY_CONN)"
 else
   echo "Modo local (SQLite)"
 fi
