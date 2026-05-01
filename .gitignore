@@ -16,6 +16,7 @@ airflow_adtech_env/
 # Environment variables
 .env
 .env.*
+!.env.example
 
 # Jupyter
 .ipynb_checkpoints/
