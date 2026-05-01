@@ -7,14 +7,14 @@ BUCKET_NAME = "storage_bucket_groppo"
 PROCESSED_DIR = f"gs://{BUCKET_NAME}/data/processed"
 DB_PORT = "5432"
 
-def run():
+def run(ds):
     db_user = Variable.get("DB_USER")
     db_pass = Variable.get("DB_PASS")
     db_host = Variable.get("DB_HOST")
     db_name = Variable.get("DB_NAME")
     print("Leyendo archivos finales desde Storage...")
-    ctr = pd.read_csv(f"{PROCESSED_DIR}/top_ctr.csv")
-    prod = pd.read_csv(f"{PROCESSED_DIR}/top_product.csv")
+    ctr = pd.read_csv(f"{PROCESSED_DIR}/{ds}/top_ctr.csv")
+    prod = pd.read_csv(f"{PROCESSED_DIR}/{ds}/top_product.csv")
 
     print("Uniendo resultados...")
     final_df = pd.concat([ctr, prod], ignore_index=True)
@@ -29,7 +29,7 @@ def run():
         raise ValueError(f"Columnas inesperadas: {list(final_df.columns)}")
 
     print("Guardando consolidado en Storage...")
-    final_df.to_csv(f"{PROCESSED_DIR}/recommendations_ready.csv", index=False)
+    final_df.to_csv(f"{PROCESSED_DIR}/{ds}/recommendations_ready.csv", index=False)
 
     print("Escribiendo en Cloud SQL (modo append para historial)...")
     engine = create_engine(f"postgresql+psycopg2://{db_user}:{db_pass}@{db_host}:{DB_PORT}/{db_name}")

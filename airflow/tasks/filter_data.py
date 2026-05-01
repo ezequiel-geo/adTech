@@ -19,7 +19,7 @@ def run(ds):
     products = products[products["advertiser_id"].isin(active["advertiser_id"])]
 
     print("Guardando resultados en Cloud Storage...")
-    ads.to_csv(f"{PROCESSED_DIR}/ads_views_filtered.csv", index=False)
-    products.to_csv(f"{PROCESSED_DIR}/product_views_filtered.csv", index=False)
+    ads.to_csv(f"{PROCESSED_DIR}/{ds}/ads_views_filtered.csv", index=False)
+    products.to_csv(f"{PROCESSED_DIR}/{ds}/product_views_filtered.csv", index=False)
 
     print("Filter terminado")

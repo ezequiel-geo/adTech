@@ -54,6 +54,7 @@ with DAG(
     db_writing_task = PythonOperator(
         task_id="db_writing",
         python_callable=db_writing.run,
+        op_kwargs={'ds': '{{ ds }}'}
     )
 
     filter_data_task >> [top_ctr_task, top_product_task]

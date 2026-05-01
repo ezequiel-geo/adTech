@@ -5,7 +5,7 @@ PROCESSED_DIR = f"gs://{BUCKET_NAME}/data/processed"
 
 def run(ds):
     print("Leyendo datos filtrados...")
-    ads = pd.read_csv(f"{PROCESSED_DIR}/ads_views_filtered.csv")
+    ads = pd.read_csv(f"{PROCESSED_DIR}/{ds}/ads_views_filtered.csv")
 
     print("Calculando CTR...")
     ctr = ads.groupby(["advertiser_id", "product_id", "type"]).size().unstack(fill_value=0)
@@ -29,6 +29,6 @@ def run(ds):
     ctr = ctr[["run_date", "advertiser_id", "model_name", "rank", "product_id", "score"]]
 
     print("Guardando resultados en Storage...")
-    ctr.to_csv(f"{PROCESSED_DIR}/top_ctr.csv", index=False)
+    ctr.to_csv(f"{PROCESSED_DIR}/{ds}/top_ctr.csv", index=False)
 
     print("Top CTR terminado")
