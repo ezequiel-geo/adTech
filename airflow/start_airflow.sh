@@ -6,24 +6,15 @@ set -e
 # Runs: api-server, scheduler, dag-processor
 #
 # Usage:
-#   bash airflow/start_airflow.sh local
-#   bash airflow/start_airflow.sh cloud <usuario> <password> <database_url>
+#   bash airflow/start_airflow.sh         # local (SQLite)
+#   bash airflow/start_airflow.sh cloud   # cloud (PostgreSQL, reads .env)
 #
 # Stop: bash airflow/stop_airflow.sh
 # ─────────────────────────────────────────────
 
 ENV=${1:-local}
 
-if [ "$ENV" = "cloud" ]; then
-  if [ -z "$2" ] || [ -z "$3" ] || [ -z "$4" ]; then
-    echo "ERROR: cloud mode requires: <usuario> <password> <database_url>"
-    echo "Usage: bash airflow/start_airflow.sh cloud <usuario> <password> <database_url>"
-    exit 1
-  fi
-  USUARIO=$2
-  PASSWORD=$3
-  DATABASE_URL=$4
-elif [ "$ENV" != "local" ]; then
+if [ "$ENV" != "local" ] && [ "$ENV" != "cloud" ]; then
   echo "ERROR: env must be 'local' or 'cloud'"
   exit 1
 fi
@@ -35,19 +26,25 @@ LOGS_DIR="$SCRIPT_DIR/logs/services"
 export AIRFLOW_HOME="$SCRIPT_DIR"
 export AIRFLOW__CORE__LOAD_EXAMPLES=False
 
-if [ "$ENV" = "cloud" ]; then
-  export AIRFLOW__CORE__PARALLELISM=2
-  export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://$USUARIO:$PASSWORD@$DATABASE_URL"
-  echo "Modo cloud (DB: $DATABASE_URL)"
-else
-  echo "Mode local (SQLite)"
-fi
-
-# Load DB credentials as Airflow Variables
+# Load .env (Airflow Variables + optional DB connection override)
 if [ -f "$SCRIPT_DIR/.env" ]; then
   set -a
   source "$SCRIPT_DIR/.env"
   set +a
+else
+  echo "WARNING: $SCRIPT_DIR/.env not found"
+fi
+
+if [ "$ENV" = "cloud" ]; then
+  if [ -z "$AIRFLOW_VAR_DB_USER" ] || [ -z "$AIRFLOW_VAR_DB_PASS" ] || [ -z "$AIRFLOW_VAR_DB_HOST" ] || [ -z "$AIRFLOW_VAR_DB_NAME" ]; then
+    echo "ERROR: cloud mode requires AIRFLOW_VAR_DB_USER, AIRFLOW_VAR_DB_PASS, AIRFLOW_VAR_DB_HOST, AIRFLOW_VAR_DB_NAME in .env"
+    exit 1
+  fi
+  export AIRFLOW__CORE__PARALLELISM=2
+  export AIRFLOW__DATABASE__SQL_ALCHEMY_CONN="postgresql+psycopg2://${AIRFLOW_VAR_DB_USER}:${AIRFLOW_VAR_DB_PASS}@${AIRFLOW_VAR_DB_HOST}/${AIRFLOW_VAR_DB_NAME}"
+  echo "Modo cloud (DB: ${AIRFLOW_VAR_DB_HOST}/${AIRFLOW_VAR_DB_NAME})"
+else
+  echo "Modo local (SQLite)"
 fi
 
 # Activate virtualenv
